@@ -1,0 +1,15 @@
+CC= gcc
+AS= as
+LD= ld
+OBJECTS = main.o switchcase.o
+CFLAGS = -Wall -O1 -g -c
+ASFLAGS = -g
+LDFLAGS = -g
+switchcase.elf: $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o switchcase.elf
+switchcase.o: switchcase.s
+	$(AS) $(ASFLAGS) switchcase.s -o switchcase.o
+main.o: main.c
+	$(CC) $(CFLAGS) main.c
+clean:
+	rm *.o *.elf
