@@ -1,31 +1,63 @@
-#include<stdio.h>
-#include "easypio.h"
 #include "kbhit.h"
-#define DELAY 5
+#include "easypio.h"
 int main(){
-	int i,flag=1;
-	pioInit();
-	for(i=1;i<9;i++){pinMode(i,OUTPUT);digitalWrite(i,LOW);}
-	nonblock(NB_ENABLE);
+pioInit();
+int luces[8][8]={{1,0,0,0,0,0,0,0},
+                 {0,1,0,0,0,0,0,0},
+                 {0,0,1,0,0,0,0,0},
+                 {0,0,0,1,0,0,0,0},
+                 {0,0,0,0,1,0,0,0},
+                 {0,0,0,0,0,1,0,0},
+                 {0,0,0,0,0,0,1,0},
+                 {0,0,0,0,0,0,0,1}};
+int i=0,c=0,j=0,d=0,flag=1;
+for(i=1;i<9;i++) pinMode( i , OUTPUT);
+
+nonblock(NB_ENABLE);
 while(flag){
-for(i=1;i<9;i++){
-	digitalWrite(i,HIGH);
-	delayMillis(DELAY);
-	if(i>0)digitalWrite(i-1,LOW);
-	delayMillis(DELAY);
-	if(kbhit()){break;flag=0;}
-	}
-for(i=8;i>0;i--){
-	if(!flag)break;
-	if(kbhit()){break;flag=0;}
-        digitalWrite(i,HIGH);
-        delayMillis(DELAY);
-        if(i<8)digitalWrite(i+1,LOW);
-        delayMillis(DELAY);
+c=0;
+for(j=0;j<8;j++){
+        for(i=0;i<8;i++){
+                digitalWrite(i+1,luces[i][j]);
+                if(kbhit()){break;flag=0;}
         }
-	if(kbhit())break;
+        if(j>=4){
+                for(i=0;i<8;i++){
+			if(!flag)break;
+                        digitalWrite(i+1,luces[i][j]|luces[i][j-4+c]);
+                        if(kbhit()){break;flag=0;}
+		}
+
+	}
+        if(!flag)break;
+        if(kbhit()){break;flag=0;}
+delayMillis(50000);
+if(j>=4){
+        for(i=0;i<8;i++){
+		digitalWrite(i+1,luces[i][j]|luces[i][j-3+c]);
+                if(!flag)break;
+                if(kbhit()){break;flag=0;}
+
+		}
+		c++;
+	}
+
+
+if(!flag)break;
+if(kbhit()){break;flag=0;}
+
+delayMillis(50000);
+
 }
-printf("%c %c",8,8);
-for(i=1;i<9;i++){digitalWrite(i,LOW);}
-return 0;
+if(!flag)break;
+if(kbhit()){break;flag=0;}
+
+
 }
+for(i=1;i<9;i++)digitalWrite(i,LOW);
+
+}
+
+
+
+

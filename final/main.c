@@ -22,9 +22,12 @@ void choque(int *,char *);
 char interrupt(char ,int *);
 void grafica(char, int *);
 void autofantastic(int *,char *);
+void carrera(int *, char *);
+void baliza(int*,char*);
+void anillo(int *,char *);
 int main(){
 	int i;
-	char vector[8]={25,29,28,27,26,6,5,4};
+	char vector[8]={LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8};
         wiringPiSetup () ;
         for(i=0;i<8;i++) pinMode(vector[i],OUTPUT);
 	if(1){
@@ -69,12 +72,22 @@ void menu(char *vector){
 	int velocidad=100,flag=1;
 	grafica(0,&velocidad);
 	do{
-	if(kbhit())
+	if(kbhit()){
+		printf("%c %c",8,8);
 		switch(getchar()){
-			case '1':choque(&velocidad,vector);printf("%c:",13);break;
-			case '2':autofantastic(&velocidad,vector);break;
+			case '1':autofantastic(&velocidad,vector);break;
+			case '2':choque(&velocidad,vector);printf("%c:",13);break;
+                        case '3':break;
+			case '4':carrera(&velocidad,vector);break;
+			case '5':anillo(&velocidad,vector);break;
+			case '6':break;
+			case '7':break;
+			case '8':baliza(&velocidad,vector);break;
+			case 'l':break;
+			case 'r':break;
 			case 'x':flag=0;
 		}
+	}
 	}while(flag);
 }
 char interrupt(char op,int *velocidad){
@@ -132,7 +145,81 @@ void autofantastic(int *velocidad,char *vector){
 	for(i=0;i<8;i++)digitalWrite(vector[i],LOW);
 
 }
+void carrera(int *velocidad, char *vector){
+	char luces[8][8]={{1,0,0,0,0,0,0,0},
+                 {0,1,0,0,0,0,0,0},
+                 {0,0,1,0,0,0,0,0},
+                 {0,0,0,1,0,0,0,0},
+                 {0,0,0,0,1,0,0,0},
+                 {0,0,0,0,0,1,0,0},
+                 {0,0,0,0,0,0,1,0},
+                 {0,0,0,0,0,0,0,1}};
+	int i=0,c=0,j=0,d=0,flag=1;
+	char op=4;
+	grafica(op,velocidad);
+while(flag){
+c=0;
+for(j=0;flag==1&&j<8;j++){
+        for(i=0;flag==1&&i<8;i++){
+                digitalWrite(vector[i],luces[i][j]);
+                if(kbhit())flag=interrupt(op,velocidad);
 
+        }
+        if(j>=4){
+                for(i=0;flag==1&&i<8;i++){
+                        digitalWrite(vector[i],luces[i][j]|luces[i][j-4+c]);
+                        if(kbhit())flag=interrupt(op,velocidad);
+                }
+
+        }
+        if(kbhit()){break;flag=0;}
+	delay(*velocidad);
+	if(j>=4){
+        	for(i=0;flag==1&&i<8;i++){
+                	digitalWrite(vector[i],luces[i][j]|luces[i][j-3+c]);
+                	if(kbhit())flag=interrupt(op,velocidad);
+                }
+                c++;
+        }
+	if(kbhit())flag=interrupt(op,velocidad);
+	delay(*velocidad);
+	}
+	if(kbhit())flag=interrupt(op,velocidad);
+	}
+	for(i=1;i<9;i++)digitalWrite(vector[i],LOW);
+
+
+}
+void anillo(int *velocidad,char *vector){
+	int flag=1,i=0,op=5;
+        grafica(op,velocidad);
+        while(flag){
+        for(i=0;flag==1&&i<8;i++){
+		digitalWrite(vector[i],HIGH);
+                delay(*velocidad);
+		if(i==0)digitalWrite(vector[7],LOW);
+                if(i>0)digitalWrite(vector[i-1],LOW);
+                delay(*velocidad);
+                if(kbhit())flag=interrupt(op,velocidad);
+        	}
+	}
+	for(i=1;i<9;i++)digitalWrite(vector[i],LOW);
+
+}
+
+void baliza(int *velocidad,char *vector){
+	int i,flag=1,op=8;
+	grafica(op,velocidad);
+	while(flag){
+	if(kbhit())flag==interrupt(op,velocidad);
+	for(i=0;flag==1&&i<8;i++)digitalWrite(vector[i],HIGH);
+	delay(*velocidad);
+	if(kbhit())flag=interrupt(op,velocidad);
+	for(i=0;flag==1&&i<8;i++)digitalWrite(vector[i],LOW);
+	delay(*velocidad);
+	}
+	for(i=0;i<8;i++)digitalWrite(vector[i],LOW);
+}
 void grafica(char op,int *velocidad){
 	system("clear");//Al final va reset
         printf("%20c#####################################\n",35);
