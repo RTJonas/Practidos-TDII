@@ -113,7 +113,7 @@ void choque(int *velocidad, char *vector){
 	char op=2;
 	grafica(op,velocidad);
 	while(flag){
-	        digitalWrite (vector[i], HIGH) ;  
+	        digitalWrite (vector[i], HIGH) ;
         	digitalWrite (vector[7-i],HIGH);delay(*velocidad);
 		flag=interrupt(1,velocidad,flag);
         	digitalWrite (vector[i],LOW);
