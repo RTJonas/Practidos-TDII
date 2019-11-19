@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "kbhit.h"
 #include <wiringPi.h>
+#include <wiringPiI2C.h>
+
 #define PAS "5554555"
 #define FD_STDIN 0
 
@@ -25,6 +27,7 @@ void autofantastic(int *,char *);
 void carrera(int *, char *);
 void baliza(int*,char*);
 void anillo(int *,char *);
+void seteo(int *);
 int main(){
 	int i;
 	char vector[8]={LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8};
@@ -85,6 +88,7 @@ void menu(char *vector){
 			case '8':baliza(&velocidad,vector);break;
 			case 'l':break;
 			case 'r':break;
+			case 's':seteo(&velocidad);break;
 			case 'x':flag=0;
 		}
 	}
@@ -104,7 +108,7 @@ int interrupt(char op,int *velocidad,int flag){
 		}
 	grafica(op,velocidad);
 	}
-
+	if(op==12)grafica(op,velocidad);
 	if(flag==0)return 0;
 	else return 1;
 }
@@ -229,12 +233,26 @@ void baliza(int *velocidad,char *vector){
 	for(i=0;i<8;i++)digitalWrite(vector[i],LOW);
 	grafica(0,velocidad);
 }
+void seteo(int *velocidad){
+	int fd, result,flag=1;
+	char op =12;
+	printf("datos del sensor:\n"); 
+	fd=wiringPiI2CSetup(0x48);
+	while(flag){
+	flag=interrupt(op,velocidad,flag);
+	wiringPiI2CWrite(fd,0);
+        result=wiringPiI2CRead(fd);
+	if(result)*velocidad=(result*250)/255;
+	else *velocidad=result;
+	delay(100);
+	}
+}
+
 void grafica(char op,int *velocidad){
 	system("clear");//Al final va reset
         printf("%20c#####################################\n",35);
         printf("%20c Trabajo final Tecnicas Digitales 2 #\n",35);
         printf("%20c#####################################\n",35);
-
 	printf("\n\n%10c Secuencias de luces:\n",62);
         if(op==1)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(1) El auto fantastico.\n");
@@ -252,10 +270,9 @@ void grafica(char op,int *velocidad){
 	printf("(7) Vumetro horizontal.\n",91);
 	if(op==8)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(8) Baliza.\n");
-        
 	printf("\n %20celocidad: %d\n\n",86,((250-(*velocidad))*100)/250);
         printf("%10c Metodos de operacion:\n",62);
-	if(op<9)printf("%13cx]",91);else printf("%13c ]",91);
+	if(op<9||op==12)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(l) Local.\n");
 	if(op==9)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(r) Remoto-Cliente.\n");
@@ -265,5 +282,5 @@ void grafica(char op,int *velocidad){
         printf("%13cc) Salir de secuencias.\n",40);
         printf("%13cs) Setear velocidades iniciales.\n",40);
         printf("%13cx) Salir del programa.\n",40);
-	printf(": ");
+	if(op!=12)printf(": ");
 }
