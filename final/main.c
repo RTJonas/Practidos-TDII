@@ -41,10 +41,12 @@ int main(){
 	char vector[8]={LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8};
         wiringPiSetup () ;
         for(i=0;i<8;i++) pinMode(vector[i],OUTPUT);
-	if(1){
+	if(acceso())
+	{
 	nonblock(NB_ENABLE);
 	menu(vector);
 	}else printf("Acceso denegado\n");
+	system("reset");
 }
 char acceso(){
 	struct termios term;
@@ -352,19 +354,51 @@ int maestro(int *velocidad,char modo){
 	 return 1 ;
  	}
 	while(flag){
-	flag=interrupt(op,velocidad,flag,modo,fd);
 	if(kbhit()){
 		printf("%c %c",8,8);
                 dat=getchar();
 		switch(dat){
-                        case '1':grafica(13,velocidad);break;
-                        case '2':grafica(14,velocidad);break;
-                        case '3':grafica(15,velocidad);break;
-                        case '4':grafica(16,velocidad);break;
-                        case '5':grafica(17,velocidad);break;
-                        case '6':grafica(18,velocidad);break;
-                        case '7':grafica(19,velocidad);break;
-                        case '8':grafica(20,velocidad);break;
+                        case '1':
+				if(op==9){
+				op=13;grafica(op,velocidad);break;
+				}
+                        case '2':
+				if(op==9){
+				op=14;grafica(op,velocidad);break;
+				}
+                        case '3':
+				if(op==9){
+				op=15;grafica(op,velocidad);break;
+				}
+                        case '4':
+				if(op==9){
+				op=16;grafica(op,velocidad);break;
+                        	}
+			case '5':
+				if(op==9){
+				op=17;grafica(op,velocidad);break;
+				}
+                        case '6':
+				if(op==9){
+				op=18;grafica(op,velocidad);break;
+				}
+                        case '7':
+				if(op==9){
+				op=19;grafica(op,velocidad);break;
+				}
+                        case '8':
+				if(op==9){
+				op=20;grafica(op,velocidad);break;
+				}
+			case '+':
+                        if(*velocidad>10)*velocidad=*velocidad-10;
+                                grafica(op,velocidad);break;
+                        case '-':
+                        if(*velocidad<250)*velocidad=*velocidad+10;
+                                grafica(op,velocidad);break;
+
+			case 'c':flag=0;break;
+			case 't':op=9;grafica(op,velocidad);break;
 		}
 		serialPutchar(fd, dat);
 	}
