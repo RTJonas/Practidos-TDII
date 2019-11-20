@@ -5,6 +5,7 @@
 #include "kbhit.h"
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
+#include <wiringSerial.h>
 #include <stdbool.h>
 #include<time.h>
 
@@ -33,6 +34,8 @@ void apilada(int *, char *);
 void vumetro_vertical(int *,char *);
 void vumetro_hor(int *,char *);
 void seteo(int *);
+int maestro(int*);
+int esclavo(int*);
 int main(){
 	int i;
 	char vector[8]={LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8};
@@ -91,8 +94,8 @@ void menu(char *vector){
 			case '6':vumetro_vertical(&velocidad,vector);break;
 			case '7':vumetro_hor(&velocidad,vector);break;
 			case '8':baliza(&velocidad,vector);break;
-			case 'l':break;
-			case 'r':break;
+			case 'e':esclavo(&velocidad);break;
+			case 'm':maestro(&velocidad);break;
 			case 's':seteo(&velocidad);break;
 			case 'x':flag=0;
 		}
@@ -325,6 +328,41 @@ void seteo(int *velocidad){
 	delay(100);
 	}
 }
+int maestro(int *velocidad){
+	int fd;
+	char op =9,dat,flag=1;
+	grafica(op,velocidad);
+	if ((fd = serialOpen ("/dev/ttyAMA0", 115200)) < 0)//APERTURA DEL PUERTO
+ 	{
+ 	printf ("No se pudo inicializar el puerto");
+ 	getchar();
+	 return 1 ;
+ 	}
+	while(flag){
+	flag=interrupt(op,velocidad,flag);
+	if(kbhit()){
+		printf("%c %c",8,8);
+                dat=getchar();
+		switch(dat){
+                        case '1':op=13;grafica(op,velocidad);break;
+                        case '2':op=14;grafica(op,velocidad);break;
+                        case '3':op=15;grafica(op,velocidad);break;
+                        case '4':op=16;grafica(op,velocidad);break;
+                        case '5':op=17;grafica(op,velocidad);break;
+                        case '6':op=18;grafica(op,velocidad);break;
+                        case '7':op=19;grafica(op,velocidad);break;
+                        case '8':op=20;grafica(op,velocidad);break;
+		}
+		serialPutchar(fd, dat);
+	}
+	}
+	serialClose(fd);
+	grafica(0,velocidad);
+}
+int esclavo(int *velocidad){
+	return 0;
+}
+
 
 void grafica(char op,int *velocidad){
 	system("clear");//Al final va reset
@@ -332,30 +370,30 @@ void grafica(char op,int *velocidad){
         printf("%20c Trabajo final Tecnicas Digitales 2 #\n",35);
         printf("%20c#####################################\n",35);
 	printf("\n\n%10c Secuencias de luces:\n",62);
-        if(op==1)printf("%13cx]",91);else printf("%13c ]",91);
+        if(op==1||op==13)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(1) El auto fantastico.\n");
-        if(op==2)printf("%13cx]",91);else printf("%13c ]",91);
+        if(op==2||op==14)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(2) El choque.\n");
-        if(op==3)printf("%13cx]",91);else printf("%13c ]",91);
+        if(op==3||op==15)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(3) La apilada.\n");
-        if(op==4)printf("%13cx]",91);else printf("%13c ]",91);
+        if(op==4||op==16)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(4) La carrera.\n");
-	if(op==5)printf("%13cx]",91);else printf("%13c ]",91);
+	if(op==5||op==17)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(5) Anillo.\n");
-	if(op==6)printf("%13cx]",91);else printf("%13c ]",91);
+	if(op==6||op==18)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(6) Vumetro vertical.\n");
-	if(op==7)printf("%13cx]",91);else printf("%13c ]",91);
+	if(op==7||op==19)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(7) Vumetro horizontal.\n",91);
-	if(op==8)printf("%13cx]",91);else printf("%13c ]",91);
+	if(op==8||op==20)printf("%13cx]",91);else printf("%13c ]",91);
 	printf("(8) Baliza.\n");
 	printf("\n %20celocidad: %d\n\n",86,((250-(*velocidad))*100)/250);
         printf("%10c Metodos de operacion:\n",62);
 	if(op<9||op==12)printf("%13cx]",91);else printf("%13c ]",91);
-	printf("(l) Local.\n");
-	if(op==9)printf("%13cx]",91);else printf("%13c ]",91);
-	printf("(r) Remoto-Cliente.\n");
+	printf("( ) Local.\n");
+	if(op==9||op>12)printf("%13cx]",91);else printf("%13c ]",91);
+	printf("(m) Remoto-Maestro.\n");
 	if(op==10)printf("%13cx]",91);else printf("%13c ]",91);
-	printf("(t) Remoto-Servidor.\n\n");
+	printf("(e) Remoto-Esclavo.\n\n");
 	printf("%10c Opciones\n",62);
         printf("%13cc) Salir de secuencias.\n",40);
         printf("%13cs) Setear velocidades iniciales.\n",40);
