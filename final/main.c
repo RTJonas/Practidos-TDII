@@ -109,7 +109,7 @@ int interrupt(char op,int *velocidad,int flag,char modo,int fd){
 		if(kbhit())if(getchar()=='c')return 0;
 		if(serialDataAvail(fd)){
 			switch(serialGetchar(fd)){
-                        	case 't':return 0;
+                        	case 't':if(op!=10)return 0;break;
                         	case '+':
                         	if(*velocidad>10)
 				*velocidad=*velocidad-10;
@@ -120,6 +120,7 @@ int interrupt(char op,int *velocidad,int flag,char modo,int fd){
 				*velocidad=*velocidad+10;
 				grafica(op,velocidad);
                                 break;
+				case 'k':if(op==10)return 0;
                         default:return 1;
                 	}
 		}
@@ -147,7 +148,7 @@ void choque(int *velocidad, char *vector,char modo,int fd,char op){
 	while(flag){
 	        digitalWrite (vector[i], HIGH) ;
         	digitalWrite (vector[7-i],HIGH);delay(*velocidad);
-		flag=interrupt(1,velocidad,flag,modo,fd);
+		flag=interrupt(op,velocidad,flag,modo,fd);
         	digitalWrite (vector[i],LOW);
         	digitalWrite (vector[7-i],LOW);delay(*velocidad);
         	i++;
@@ -298,6 +299,7 @@ void vumetro_vertical(int *velocidad,char *vector,char modo,int fd,char op){
 	int num=0,i;
 	char flag=1;
 	srand(time(NULL));
+	grafica(op,velocidad);
         while(flag){
                 num = rand()%9;
                 num = rand()%9;
@@ -313,6 +315,7 @@ void vumetro_hor(int *velocidad,char *vector,char modo,int fd,char op){
         int num=0,i;
         char flag=1;
         srand(time(NULL));
+	grafica(op,velocidad);
         while(flag){
                 num = rand()%4;
                 num = rand()%4;
@@ -383,21 +386,41 @@ int esclavo(int *velocidad,char *vector){
         if(serialDataAvail(fd)){
                 dat=serialGetchar(fd);
                 switch(dat){
-                        case '1':op=21;autofantastic(velocidad,vector,modo,fd,op);break;
-                        case '2':op=22;choque(velocidad,vector,modo,fd,op);break;
-                        case '3':op=23;apilada(velocidad,vector,modo,fd,op);break;
-                        case '4':op=24;carrera(velocidad,vector,modo,fd,op);break;
-                        case '5':op=25;anillo(velocidad,vector,modo,fd,op);break;
-                        case '6':op=26;vumetro_vertical(velocidad,vector,modo,fd,op);break;
-                        case '7':op=27;vumetro_hor(velocidad,vector,modo,fd,op);break;
-                        case '8':op=28;baliza(velocidad,vector,modo,fd,op);break;
+                        case '1':op=21;
+				autofantastic(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(op,velocidad);break;
+                        case '2':op=22;
+				choque(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(op,velocidad);break;
+                        case '3':op=23;
+				apilada(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(op,velocidad);break;
+                        case '4':op=24;
+				carrera(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(op,velocidad);break;
+                        case '5':op=25;
+				anillo(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(10,velocidad);break;
+                        case '6':op=26;
+				vumetro_vertical(velocidad,vector,modo,fd,op);
+				grafica(10,velocidad);break;
+                        case '7':op=27;
+				vumetro_hor(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(10,velocidad);break;
+                        case '8':op=28;
+				baliza(velocidad,vector,modo,fd,op);
+				op=10;
+				grafica(10,velocidad);break;
 		}
-		op=10;
-		grafica(op,velocidad);
         }
         }
         serialClose(fd);
-        grafica(0,velocidad);
 }
 
 
