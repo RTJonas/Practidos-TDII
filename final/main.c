@@ -5,6 +5,8 @@
 #include "kbhit.h"
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
+#include <stdbool.h>
+#include<time.h>
 
 #define PAS "5554555"
 #define FD_STDIN 0
@@ -27,6 +29,9 @@ void autofantastic(int *,char *);
 void carrera(int *, char *);
 void baliza(int*,char*);
 void anillo(int *,char *);
+void apilada(int *, char *);
+void vumetro_vertical(int *,char *);
+void vumetro_hor(int *,char *);
 void seteo(int *);
 int main(){
 	int i;
@@ -80,11 +85,11 @@ void menu(char *vector){
 		switch(getchar()){
 			case '1':autofantastic(&velocidad,vector);break;
 			case '2':choque(&velocidad,vector);break;
-                        case '3':break;
+                        case '3':apilada(&velocidad,vector);break;
 			case '4':carrera(&velocidad,vector);break;
 			case '5':anillo(&velocidad,vector);break;
-			case '6':break;
-			case '7':break;
+			case '6':vumetro_vertical(&velocidad,vector);break;
+			case '7':vumetro_hor(&velocidad,vector);break;
 			case '8':baliza(&velocidad,vector);break;
 			case 'l':break;
 			case 'r':break;
@@ -232,6 +237,79 @@ void baliza(int *velocidad,char *vector){
 	}
 	for(i=0;i<8;i++)digitalWrite(vector[i],LOW);
 	grafica(0,velocidad);
+}
+void apilada(int *velocidad,char *vector){
+        int i,j,k=0;
+	char flag=1,op=3;
+        bool tarro[8][8]={
+        {1,0,0,0,0,0,0,0},
+        {0,1,0,0,0,0,0,0},
+        {0,0,1,0,0,0,0,0},
+        {0,0,0,1,0,0,0,0},
+        {0,0,0,0,1,0,0,0},
+        {0,0,0,0,0,1,0,0},
+        {0,0,0,0,0,0,1,0},
+        {0,0,0,0,0,0,0,1},
+        };
+	grafica(op,velocidad);
+        while(flag){
+            for(j=0;flag!=0&&j<8-k;j++){
+                 for(i=0;flag!=0&&i<8-k;i++){
+			flag=interrupt(op,velocidad,flag);
+                        for(i=0;flag!=0&&i<8-k;i++){
+				flag=interrupt(op,velocidad,flag);
+                                digitalWrite(vector[i],tarro[i][j]);
+                                delay(*velocidad);
+                        }
+                        if(j+k==7){
+                                k++;digitalWrite(vector[8-k],0);
+                                delay(*velocidad+100);
+                                digitalWrite(vector[8-k],1);
+			}
+                        if(k==8){
+				k=0;
+				for(i=0;i<8;i++)
+				digitalWrite(vector[i],0);
+				delay(300);
+			}
+		}
+                flag=interrupt(op,velocidad,flag);
+        }
+	}
+        for(i=0;i<8;i++)digitalWrite(vector[i],0);
+	grafica(0,velocidad);
+}
+void vumetro_vertical(int *velocidad,char *vector){
+	int num=0,i;
+	char flag=1,op=6;
+	srand(time(NULL));
+        while(flag){
+                num = rand()%9;
+                num = rand()%9;
+                for(i=0;i<num;i++){digitalWrite(vector[i],1);
+                }delay(*velocidad);
+                for(i=1;i<8;i++)digitalWrite(vector[i],0);
+                flag=interrupt(op,velocidad,flag);
+
+        }
+        for(i=0;i<8;i++)digitalWrite(vector[i],0);
+	grafica(0,velocidad);
+}
+void vumetro_hor(int *velocidad,char *vector){
+        int num=0,i;
+        char flag=1,op=7;
+        srand(time(NULL));
+        while(flag){
+                num = rand()%4;
+                num = rand()%4;
+                for(i=0;i<=num;i++){digitalWrite(vector[3-i],1);digitalWrite(vector[4+i],1);}
+                delay(*velocidad);
+                for(i=0;i<8;i++)digitalWrite(vector[i],0);
+                flag=interrupt(op,velocidad,flag);
+        }
+        for(i=0;i<8;i++)digitalWrite(vector[i],0);
+	grafica(0,velocidad);
+
 }
 void seteo(int *velocidad){
 	int fd, result,flag=1;
